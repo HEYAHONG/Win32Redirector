@@ -137,7 +137,7 @@ int main(int argc,char* const argv[], char* const envp[])
         const char *path_c_str=getenv("PATH");
         if(path_c_str!=NULL)
         {
-            putenv((std::string("PATH=")+TargetDirPath+";"+std::string(path_c_str)).c_str());
+            putenv((char *)(std::string("PATH=")+TargetDirPath+";"+std::string(path_c_str)).c_str());
         }
 
 
