@@ -122,12 +122,12 @@ int main(int argc,char* const argv[], char* const envp[])
     else
     {
         //生成新的argv
-        char * new_argv[argc+1]={0};
+        char * new_argv[argc+1]= {0};
         {
             //使得argv[0]为目标自身路径
             new_argv[0]=(char *)TargetPath.c_str();
             //复制原有的数据
-            for(int i=1;i<argc;i++)
+            for(int i=1; i<argc; i++)
             {
                 new_argv[i]=argv[i];
             }
@@ -141,8 +141,6 @@ int main(int argc,char* const argv[], char* const envp[])
         }
 
 
-        spawnv(_P_WAIT,TargetPath.c_str(),new_argv);
+        return spawnv(_P_WAIT,TargetPath.c_str(),new_argv);
     }
-
-    return 0;
 }
