@@ -1,6 +1,6 @@
 # 说明
 
-在使用[MSYS2](https://www.msys2.org/)或者[Cygwin](https://cygwin.com/l)的过程中希望在cmd.exe中直接使用其中的命令（如which、find、file等命令）。
+在使用[MSYS2](https://www.msys2.org/)或者[Cygwin](https://cygwin.com/)的过程中希望在cmd.exe中直接使用其中的命令（如which、find、file等命令）。
 
 为使用相关命令，可直接将MSYS2或者Cygwin添加至PATH变量，这样做的缺点是容易与其它软件冲突（如git for windows）,导致一些奇奇怪怪的错误（主要是由于某些dll版本不对）。
 
