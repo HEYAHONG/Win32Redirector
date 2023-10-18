@@ -35,6 +35,25 @@ std::vector<std::string> TargetSearchPath=
     "\\cygwin64\\bin"
 };
 
+void InitTargetSearchPath()
+{
+    const char *Win32RedirectorSearchPath=getenv("WIN32REDIRECTOR_SEARCH_PATH");
+    if(Win32RedirectorSearchPath != NULL)
+    {
+        std::string path_list(Win32RedirectorSearchPath);
+        while(std::string::npos!=path_list.find(';'))
+        {
+            std::string::size_type pos=path_list.find(';');
+            TargetSearchPath.insert(TargetSearchPath.begin(),path_list.substr(0,pos));
+            path_list=path_list.substr(pos+1);
+        }
+        if(!path_list.empty())
+        {
+            TargetSearchPath.insert(TargetSearchPath.begin(),path_list);
+        }
+    }
+}
+
 std::string SearchTargetPath()
 {
     std::string AppName=GetAppFileName();
@@ -113,6 +132,7 @@ std::string SearchTargetDirPath()
 
 int main(int argc,char* const argv[], char* const envp[])
 {
+    InitTargetSearchPath();
     std::string TargetPath=SearchTargetPath();
     std::string TargetDirPath=SearchTargetDirPath();
     if(TargetPath.empty() || TargetDirPath.empty())
