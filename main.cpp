@@ -54,9 +54,8 @@ void InitTargetSearchPath()
     }
 }
 
-std::string SearchTargetPath()
+std::string SearchTargetPath(std::string AppName=GetAppFileName())
 {
-    std::string AppName=GetAppFileName();
 
     for(std::vector<std::string>::iterator it=TargetSearchPath.begin(); it!=TargetSearchPath.end(); it++)
     {
@@ -92,9 +91,8 @@ std::string SearchTargetPath()
     return std::string();
 }
 
-std::string SearchTargetDirPath()
+std::string SearchTargetDirPath(std::string AppName=GetAppFileName())
 {
-    std::string AppName=GetAppFileName();
 
     for(std::vector<std::string>::iterator it=TargetSearchPath.begin(); it!=TargetSearchPath.end(); it++)
     {
