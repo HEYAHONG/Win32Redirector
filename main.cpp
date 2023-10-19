@@ -128,6 +128,39 @@ std::string SearchTargetDirPath(std::string AppName=GetAppFileName())
     return std::string();
 }
 
+std::string StripFileNameExt(std::string FileName)
+{
+    std::string FileNameNoExt;
+    //去掉文件名中的扩展名
+    for(size_t i=0; i<FileName.length(); i++)
+    {
+        if(FileName.c_str()[FileName.length()-i-1]=='.')
+        {
+            FileNameNoExt=FileName.substr(0,FileName.length()-i-1);
+        }
+    }
+
+    if(FileNameNoExt.empty())
+    {
+        FileNameNoExt=FileName;
+    }
+
+    return FileNameNoExt;
+}
+
+std::string StringReplace(std::string str, const std::string to_replaced, const std::string newchars)
+{
+    for(std::string::size_type pos(0); pos != std::string::npos; pos += newchars.length())
+    {
+        pos = str.find(to_replaced,pos);
+        if(pos!=std::string::npos)
+            str.replace(pos,to_replaced.length(),newchars);
+        else
+            break;
+    }
+    return  str;
+}
+
 int main(int argc,char* const argv[], char* const envp[])
 {
     InitTargetSearchPath();
@@ -135,6 +168,42 @@ int main(int argc,char* const argv[], char* const envp[])
     std::string TargetDirPath=SearchTargetDirPath();
     if(TargetPath.empty() || TargetDirPath.empty())
     {
+        //未找到Exe
+        {
+            //尝试寻找脚本文件（注意:不支持带后缀的脚本）
+            std::string BashPath=SearchTargetPath("bash.exe");
+            std::string BashDirPath=SearchTargetDirPath("bash.exe");
+            if(!BashPath.empty() && !BashDirPath.empty())
+            {
+                //设置PATH
+                const char *path_c_str=getenv("PATH");
+                if(path_c_str!=NULL)
+                {
+                    putenv((char *)(std::string("PATH=")+BashDirPath+";"+std::string(path_c_str)).c_str());
+                }
+                std::string ScriptName=StripFileNameExt(GetAppFileName());
+                if(!ScriptName.empty())
+                {
+                    std::string ScriptPath=SearchTargetPath(ScriptName);
+                    if(!ScriptPath.empty())
+                    {
+                        ScriptPath=StringReplace(ScriptPath,"\\","/");
+                        char * new_argv[argc+2]= {0};
+                        //使得argv[0]为Bash路径
+                        new_argv[0]=(char *)BashPath.c_str();
+                        //使得argv[1]为脚本路径
+                        new_argv[1]=(char *)ScriptPath.c_str();
+                        for(int i=1; i<argc; i++)
+                        {
+                            new_argv[i+1]=argv[i];
+                        }
+                        return spawnv(_P_WAIT,BashPath.c_str(),new_argv);
+                    }
+
+
+                }
+            }
+        }
         return -1;
     }
     else
