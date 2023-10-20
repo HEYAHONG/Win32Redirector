@@ -27,12 +27,53 @@ std::string GetAppFileName()
     return std::string();
 }
 
+std::string GetAppDirName()
+{
+    char path[MAX_PATH]= {0};
+    GetModuleFileNameA(NULL,path,MAX_PATH);
+    if(strlen(path)>0)
+    {
+        size_t len=strlen(path);
+        for(size_t i=0; i<len; i++)
+        {
+            if(path[len-i-1]=='\\')
+            {
+                return std::string(path).substr(0,len-i);
+            }
+        }
+    }
+    return std::string();
+}
+
+
 std::vector<std::string> TargetSearchPath=
 {
+    //父目录（指重定向程序父目录）
+    "..\\msys64\\usr\\bin",
+    "..\\msys64\\mingw32\\bin",
+    "..\\msys64\\mingw64\\bin",
+    "..\\cygwin64\\bin",
+    "..\\msys32\\usr\\bin",
+    "..\\msys32\\mingw32\\bin",
+    "..\\msys32\\mingw64\\bin",
+
+    //当前目录（指重定向程序所在目录）
+    ".\\msys64\\usr\\bin",
+    ".\\msys64\\mingw32\\bin",
+    ".\\msys64\\mingw64\\bin",
+    ".\\cygwin64\\bin",
+    ".\\msys32\\usr\\bin",
+    ".\\msys32\\mingw32\\bin",
+    ".\\msys32\\mingw64\\bin",
+
+    //各个盘符的根目录
     "\\msys64\\usr\\bin",
     "\\msys64\\mingw32\\bin",
     "\\msys64\\mingw64\\bin",
     "\\cygwin64\\bin"
+    "\\msys32\\usr\\bin",
+    "\\msys32\\mingw32\\bin",
+    "\\msys32\\mingw64\\bin",
 };
 
 void InitTargetSearchPath()
@@ -54,9 +95,8 @@ void InitTargetSearchPath()
     }
 }
 
-std::string SearchTargetPath(std::string AppName=GetAppFileName())
+std::string SearchTarget(std::string AppName,bool IsReturnDir=false)
 {
-
     for(std::vector<std::string>::iterator it=TargetSearchPath.begin(); it!=TargetSearchPath.end(); it++)
     {
         std::string path=(*it);
@@ -65,7 +105,28 @@ std::string SearchTargetPath(std::string AppName=GetAppFileName())
         {
             path+="\\";
         }
-        if(path.c_str()[1]!=':')
+        if(path.c_str()[0]== '.')
+        {
+            //当以.开头的默认为当前目录或者父目录
+            std::string appdir=GetAppDirName();
+            if(!appdir.empty())
+            {
+                std::string realpath=appdir+path+AppName;
+                if(access(realpath.c_str(),0)==0)
+                {
+                    if(IsReturnDir)
+                    {
+                        return (appdir+path);
+                    }
+                    else
+                    {
+                        return realpath;
+                    }
+                }
+            }
+
+        }
+        else if(path.c_str()[1]!=':')
         {
             //不是带盘符的路径,添加盘符搜索
             for(char i='A'; i<='Z'; i++)
@@ -74,7 +135,14 @@ std::string SearchTargetPath(std::string AppName=GetAppFileName())
                 std::string realpath=std::string(driver)+path+AppName;
                 if(access(realpath.c_str(),0)==0)
                 {
-                    return realpath;
+                    if(IsReturnDir)
+                    {
+                        return (std::string(driver)+path);
+                    }
+                    else
+                    {
+                        return realpath;
+                    }
                 }
             }
         }
@@ -83,7 +151,14 @@ std::string SearchTargetPath(std::string AppName=GetAppFileName())
             std::string realpath=path+AppName;
             if(access(realpath.c_str(),0)==0)
             {
-                return realpath;
+                if(IsReturnDir)
+                {
+                    return path;
+                }
+                else
+                {
+                    return realpath;
+                }
             }
         }
     }
@@ -91,41 +166,14 @@ std::string SearchTargetPath(std::string AppName=GetAppFileName())
     return std::string();
 }
 
+std::string SearchTargetPath(std::string AppName=GetAppFileName())
+{
+    return SearchTarget(AppName,false);
+}
+
 std::string SearchTargetDirPath(std::string AppName=GetAppFileName())
 {
-
-    for(std::vector<std::string>::iterator it=TargetSearchPath.begin(); it!=TargetSearchPath.end(); it++)
-    {
-        std::string path=(*it);
-        //添加末尾的反斜杠(\)
-        if(path.c_str()[path.length()-1]!='\\')
-        {
-            path+="\\";
-        }
-        if(path.c_str()[1]!=':')
-        {
-            //不是带盘符的路径,添加盘符搜索
-            for(char i='A'; i<='Z'; i++)
-            {
-                char driver[3]= {i,':',0};
-                std::string realpath=std::string(driver)+path+AppName;
-                if(access(realpath.c_str(),0)==0)
-                {
-                    return std::string(driver)+path;
-                }
-            }
-        }
-        else
-        {
-            std::string realpath=path+AppName;
-            if(access(realpath.c_str(),0)==0)
-            {
-                return path;
-            }
-        }
-    }
-
-    return std::string();
+    return SearchTarget(AppName,true);
 }
 
 std::string StripFileNameExt(std::string FileName)
