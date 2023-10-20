@@ -70,7 +70,7 @@ std::vector<std::string> TargetSearchPath=
     "\\msys64\\usr\\bin",
     "\\msys64\\mingw32\\bin",
     "\\msys64\\mingw64\\bin",
-    "\\cygwin64\\bin"
+    "\\cygwin64\\bin",
     "\\msys32\\usr\\bin",
     "\\msys32\\mingw32\\bin",
     "\\msys32\\mingw64\\bin",
